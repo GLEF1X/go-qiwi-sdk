@@ -5,11 +5,15 @@
 *.so
 *.dylib
 
-# test main file
+# testFilter main file
 main.go
 
-# Test binary, built with `go test -c`
-*.test
+# coverage and profiles
+cover.html
+profile.out
+
+# Test binary, built with `go testFilter -c`
+*.testFilter
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out

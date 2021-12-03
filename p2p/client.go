@@ -2,45 +2,50 @@ package p2p
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/GLEF1X/qiwi-golang-sdk/core"
 	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
 	"github.com/GLEF1X/qiwi-golang-sdk/types"
 	jsoniter "github.com/json-iterator/go"
-	"net/http"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
-	baseP2PQiwiAPIUrl = "https://api.qiwi.com"
+	baseP2PQiwiAPIURL = "https://api.qiwi.com"
 )
 
-type Client struct {
-	config *Config
-	client *core.HttpClient
+type APIClient struct {
+	config     *Config
+	httpClient *core.HttpClient
 }
 
-func NewClient(config *Config) *Client {
-	return &Client{
-		config: config,
-		client: core.NewHttpClient(),
+func NewAPIClient(config *Config) *APIClient {
+	return &APIClient{
+		config:     config,
+		httpClient: core.NewHttpClient(),
 	}
 }
 
-func (api *Client) CreateBill(ctx context.Context, options *BillCreationOptions) (*types.Bill, error) {
+func (api *APIClient) Close() {
+	api.httpClient.Close()
+}
+
+func (api *APIClient) CreateBill(ctx context.Context, options *BillCreationOptions) (*types.Bill, error) {
 	options, err := options.Normalize()
 	if err != nil {
 		return nil, err
 	}
-	response, err := api.client.SendRequest(
+	response, err := api.httpClient.SendRequest(
 		ctx,
 		&core.Request{
-			BaseUrl:            baseP2PQiwiAPIUrl,
+			BaseUrl:            baseP2PQiwiAPIURL,
 			APIEndpoint:        endpoints.CreateBill,
 			HttpMethod:         http.MethodPut,
 			AuthorizationToken: api.config.SecretToken,
 			Payload: &core.Payload{
-				UrlConstructArgs: []interface{}{options.BillID},
+				URLConstructArgs: []interface{}{options.BillID},
 				Body:             options,
 			},
 		},
@@ -55,39 +60,36 @@ func (api *Client) CreateBill(ctx context.Context, options *BillCreationOptions)
 	return bill, nil
 }
 
-func (api *Client) CheckBillStatus(ctx context.Context, billID string) (*types.Bill, bool, error) {
-	response, err := api.client.SendRequest(
+func (api *APIClient) GetBillStatus(ctx context.Context, billID string) (types.BillStatus, error) {
+	response, err := api.httpClient.SendRequest(
 		ctx,
 		&core.Request{
-			BaseUrl:            baseP2PQiwiAPIUrl,
+			BaseUrl:            baseP2PQiwiAPIURL,
 			APIEndpoint:        endpoints.CheckBillStatus,
 			HttpMethod:         http.MethodGet,
 			AuthorizationToken: api.config.SecretToken,
-			Payload:            &core.Payload{UrlConstructArgs: []interface{}{billID}},
+			Payload:            &core.Payload{URLConstructArgs: []interface{}{billID}},
 		},
 	)
 	if err != nil {
-		return nil, false, err
+		return "", err
 	}
 	var bill types.Bill
 	if err := json.Unmarshal(response, &bill); err != nil {
-		return nil, false, err
+		return "", err
 	}
-	if bill.Status.Value != types.StatusPaid {
-		return &bill, false, nil
-	}
-	return &bill, true, nil
+	return bill.Status.Value, nil
 }
 
-func (api *Client) RejectBill(ctx context.Context, billID string) error {
-	_, err := api.client.SendRequest(
+func (api *APIClient) RejectBill(ctx context.Context, billID string) error {
+	_, err := api.httpClient.SendRequest(
 		ctx,
 		&core.Request{
-			BaseUrl:            baseP2PQiwiAPIUrl,
+			BaseUrl:            baseP2PQiwiAPIURL,
 			APIEndpoint:        endpoints.RejectBill,
 			HttpMethod:         http.MethodPost,
 			AuthorizationToken: api.config.SecretToken,
-			Payload:            &core.Payload{UrlConstructArgs: []interface{}{billID}},
+			Payload:            &core.Payload{URLConstructArgs: []interface{}{billID}},
 		},
 	)
 	if err != nil {

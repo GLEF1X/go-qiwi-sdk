@@ -1,10 +1,11 @@
 package api
 
 import (
-	"github.com/fatih/structs"
-	"github.com/go-playground/validator/v10"
 	"strconv"
 	"time"
+
+	"github.com/fatih/structs"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -15,7 +16,7 @@ type HistoryFilter struct {
 	Rows      int        `validate:"omitempty,min=0,max=50" json:"rows"`
 	Operation string     `validate:"omitempty,oneof=QW_RUB QW_USD QW_EUR CARD MK" json:"operation"`
 	StartDate *time.Time `json:"startDate"`
-	EndDate   *time.Time `validate:"omitempty,required_if=StartDate,ltfield=StartDate" json:"endDate"`
+	EndDate   *time.Time `validate:"omitempty,gtfield=StartDate" json:"endDate"`
 }
 
 func (filter *HistoryFilter) ConvertToMapWithValidation(validate *validator.Validate) (map[string]string, error) {

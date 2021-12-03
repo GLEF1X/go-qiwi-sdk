@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
 	"io"
 	"net/http"
 	"net/url"
 	"sync"
+
+	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
 )
 
 var headersPool = sync.Pool{
@@ -32,15 +33,13 @@ type Request struct {
 type Payload struct {
 	Headers          *http.Header
 	QueryParams      map[string]string
-	UrlConstructArgs []interface{}
+	URLConstructArgs []interface{}
 	Body             interface{}
 }
 
 func (p *Payload) GetBody() (io.Reader, error) {
 	buffer := new(bytes.Buffer)
 	err := json.NewEncoder(buffer).Encode(p.Body)
-	res, _ := json.MarshalIndent(p.Body, "", "    ")
-	fmt.Println(string(res))
 	if err != nil {
 		return nil, err
 	}
@@ -48,11 +47,11 @@ func (p *Payload) GetBody() (io.Reader, error) {
 }
 
 func (r Request) GetUrl() string {
-	return r.BaseUrl + r.APIEndpoint.Resolve(r.Payload.UrlConstructArgs)
+	return r.BaseUrl + r.APIEndpoint.Resolve(r.Payload.URLConstructArgs)
 }
 
 func (r Request) Http(ctx context.Context) (*http.Request, error) {
-	endpoint := r.BaseUrl + r.APIEndpoint.Resolve(r.Payload.UrlConstructArgs)
+	endpoint := r.BaseUrl + r.APIEndpoint.Resolve(r.Payload.URLConstructArgs)
 	body, err := r.Payload.GetBody()
 	if err != nil {
 		return nil, err

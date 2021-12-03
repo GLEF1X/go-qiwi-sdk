@@ -4,14 +4,27 @@ import (
 	"time"
 )
 
-type BillStatusValue string
+type BillStatus string
 
 const (
-	StatusWaiting  BillStatusValue = "WAITING"
-	StatusPaid     BillStatusValue = "PAID"
-	StatusRejected BillStatusValue = "REJECTED"
-	StatusExpired  BillStatusValue = "EXPIRED"
+	StatusWaiting  BillStatus = "WAITING"
+	StatusPaid     BillStatus = "PAID"
+	StatusRejected BillStatus = "REJECTED"
+	StatusExpired  BillStatus = "EXPIRED"
 )
+
+type Bill struct {
+	Amount       RequestAmount `json:"amount"`
+	Status       Status        `json:"status"`
+	Customer     Customer      `json:"customer"`
+	CustomFields CustomFields  `json:"customFields"`
+	CreatedAt    time.Time     `json:"creationDateTime"`
+	ExpireAt     time.Time     `json:"expirationDateTime"`
+	SiteId       string        `json:"siteId"`
+	ID           string        `json:"billId"`
+	PayUrl       string        `json:"payUrl"`
+	Comment      string        `json:"comment"`
+}
 
 type Customer struct {
 	Phone   string `json:"phone"`
@@ -24,20 +37,7 @@ type CustomFields struct {
 	ThemeCode       string `json:"themeCode"`
 }
 
-type BillStatus struct {
-	Value           BillStatusValue `json:"value"`
-	ChangedDateTime time.Time       `json:"changedDateTime"`
-}
-
-type Bill struct {
-	Amount       RequestAmount `json:"amount"`
-	Status       BillStatus    `json:"status"`
-	Customer     Customer      `json:"customer"`
-	CustomFields CustomFields  `json:"customFields"`
-	SiteId       string        `json:"siteId"`
-	BillId       string        `json:"billId"`
-	PayUrl       string        `json:"payUrl"`
-	Comment      string        `json:"comment"`
-	CreatedAt    time.Time     `json:"creationDateTime"`
-	ExpireAt     time.Time     `json:"expirationDateTime"`
+type Status struct {
+	Value           BillStatus `json:"value"`
+	ChangedDateTime time.Time  `json:"changedDateTime"`
 }

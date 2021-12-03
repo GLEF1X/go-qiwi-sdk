@@ -2,12 +2,20 @@ package api
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 )
 
 var (
-	ErrWrongConfigCredentials = errors.New("API Token is empty string")
+	ErrAPITokenIsEmpty          = errors.New("API Token is empty string")
+	ErrPhoneNumberInvalidFormat = errors.New("phone number does not match the required format")
 )
+
+var phoneNumberRegexp *regexp.Regexp
+
+func init() {
+	phoneNumberRegexp = regexp.MustCompile(`^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$`)
+}
 
 type Config struct {
 	AuthorizationToken string // QIWI API token received from https://qiwi.com/api
@@ -20,11 +28,17 @@ func (c *Config) GetPhoneNumberForAPIRequests() string {
 
 func NewConfig(APIAccessToken string, PhoneNumber string) (*Config, error) {
 	if strings.TrimSpace(APIAccessToken) == "" {
-		return nil, ErrWrongConfigCredentials
+		return nil, ErrAPITokenIsEmpty
 	}
+
 	if !strings.HasPrefix(PhoneNumber, "+") {
 		PhoneNumber = "+" + PhoneNumber
 	}
+
+	if !phoneNumberRegexp.MatchString(PhoneNumber) {
+		return nil, ErrPhoneNumberInvalidFormat
+	}
+
 	return &Config{
 		AuthorizationToken: APIAccessToken,
 		PhoneNumber:        PhoneNumber,

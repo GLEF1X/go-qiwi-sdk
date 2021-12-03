@@ -1,7 +1,7 @@
 package types
 
 type ResponseAmount struct {
-	Value    float64 `json:"amount,string"`
+	Value    float64 `json:"amount"`
 	Currency int     `json:"currency"`
 }
 

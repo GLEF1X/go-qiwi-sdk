@@ -6,14 +6,14 @@ import (
 )
 
 type Transaction struct {
-	ID         int            `json:"txnId"`
-	PersonId   int            `json:"personId"`
+	Commission ResponseAmount `json:"commission"`
+	Amount     ResponseAmount `json:"sum"`
 	Date       time.Time      `json:"date"`
 	Status     string         `json:"status"`
 	TxnType    string         `json:"type"`
-	Amount     ResponseAmount `json:"sum"`
 	Comment    string         `json:"comment"`
-	Commission ResponseAmount `json:"commission"`
+	ID         int            `json:"txnId"`
+	PersonId   int            `json:"personId"`
 }
 
 func (t Transaction) String() string {

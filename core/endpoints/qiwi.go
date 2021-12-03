@@ -9,8 +9,8 @@ func (e Endpoint) Resolve(args []interface{}) string {
 }
 
 const (
-	TransactionsEndpoint Endpoint = "/payment-history/v2/persons/%s/payments"
-	CreateBill           Endpoint = "/partner/bill/v1/bills/%s"
-	CheckBillStatus      Endpoint = "/partner/bill/v1/bills/%s"
-	RejectBill           Endpoint = "/partner/bill/v1/bills/%s/reject"
+	GetTransactions Endpoint = "/payment-history/v2/persons/%s/payments"
+	CreateBill      Endpoint = "/partner/bill/v1/bills/%s"
+	CheckBillStatus Endpoint = "/partner/bill/v1/bills/%s"
+	RejectBill      Endpoint = "/partner/bill/v1/bills/%s/reject"
 )

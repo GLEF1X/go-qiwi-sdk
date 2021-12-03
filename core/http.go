@@ -2,12 +2,13 @@ package core
 
 import (
 	"context"
-	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"mime"
 	"net/http"
 	"strings"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -16,8 +17,10 @@ type HttpClient struct {
 	client *http.Client
 }
 
-func NewHttpClient() *HttpClient {
-	return &HttpClient{
+type Option func(*HttpClient)
+
+func NewHttpClient(opts ...Option) *HttpClient {
+	client := &HttpClient{
 		client: &http.Client{
 			Transport: &http.Transport{
 				DisableCompression: true,
@@ -26,6 +29,14 @@ func NewHttpClient() *HttpClient {
 			},
 		},
 	}
+	for _, opt := range opts {
+		opt(client)
+	}
+	return client
+}
+
+func (c *HttpClient) Close() {
+	c.client.CloseIdleConnections()
 }
 
 func (w *HttpClient) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {

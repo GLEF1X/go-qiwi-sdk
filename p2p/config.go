@@ -6,34 +6,31 @@ import (
 )
 
 type Config struct {
-	SecretToken string // QIWI P2P secret key received from https://p2p.qiwi.com/
+	SecretToken string // QIWI P2P secret token received from https://p2p.qiwi.com/
 }
 
 func NewConfig(secretToken string) (*Config, error) {
-	_, err := newDecodedToken(secretToken)
-	if err != nil {
+	if !isTokenValid(secretToken) {
 		return nil, fmt.Errorf("p2p token is invalid")
 	}
 	return &Config{SecretToken: secretToken}, nil
 }
 
-type decodedP2PToken struct {
-	version string
-	data    struct {
-		payinMerchantSiteUID string
-		userID               string
-		secret               string
-	}
-}
-
-func newDecodedToken(plainStringToken string) (*decodedP2PToken, error) {
+func isTokenValid(plainStringToken string) bool {
 	decodedToken, err := base64.StdEncoding.DecodeString(plainStringToken)
 	if err != nil {
-		return nil, err
+		return false
 	}
-	var token *decodedP2PToken
-	if err := json.Unmarshal(decodedToken, &token); err != nil {
-		return nil, err
+	newTokenPayload := struct {
+		version string
+		data    struct {
+			payinMerchantSiteUID string
+			userID               string
+			secret               string
+		}
+	}{}
+	if err := json.Unmarshal(decodedToken, &newTokenPayload); err != nil {
+		return false
 	}
-	return token, nil
+	return true
 }

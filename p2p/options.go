@@ -1,13 +1,19 @@
 package p2p
 
 import (
+	"errors"
+	"time"
+
 	"github.com/GLEF1X/qiwi-golang-sdk/types"
 	"github.com/google/uuid"
-	"time"
 )
 
 const (
 	DefaultExpireDuration = 15 * time.Minute
+)
+
+var (
+	ErrAmountIsEmpty = errors.New("amount field cannot be empty")
 )
 
 type BillCreationOptions struct {
@@ -26,7 +32,9 @@ func (opts *BillCreationOptions) Normalize() (*BillCreationOptions, error) {
 		if err := opts.SetDefaultExpirationDateTime(); err != nil {
 			return nil, err
 		}
-
+	}
+	if opts.Amount.Value == 0 || opts.Amount.Currency == "" {
+		return nil, ErrAmountIsEmpty
 	}
 	return opts, nil
 }

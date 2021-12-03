@@ -19,8 +19,8 @@ func main() {
 		// handle it gracefully
 		panic(err)
     }
-	client := p2p.NewClient(config)
-	bill, err := client.CreateBill(
+	httpClient := p2p.NewClient(config)
+	bill, err := httpClient.CreateBill(
 		context.Background(),
 		&p2p.BillCreationOptions{
 			Amount: types.RequestAmount{
