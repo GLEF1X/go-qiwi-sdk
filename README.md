@@ -1,7 +1,7 @@
-# qiwi-golang-sdk
+# SDK for QIWI API, written with golang
 
 
-### Quick start:
+### Quick example:
 
 ```go
 package main
