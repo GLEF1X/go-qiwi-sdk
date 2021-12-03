@@ -5,7 +5,6 @@ import (
 	"github.com/GLEF1X/qiwi-golang-sdk/core"
 	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
 	"github.com/GLEF1X/qiwi-golang-sdk/types"
-	"github.com/google/uuid"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
@@ -28,9 +27,12 @@ func NewClient(config *Config) *Client {
 	}
 }
 
-func (api *Client) CreateBill(ctx context.Context, billPayload *BillCreationOptions) (*types.Bill, error) {
-	billId := uuid.New().String()
-	data, err := api.client.SendRequest(
+func (api *Client) CreateBill(ctx context.Context, options *BillCreationOptions) (*types.Bill, error) {
+	options, err := options.Normalize()
+	if err != nil {
+		return nil, err
+	}
+	response, err := api.client.SendRequest(
 		ctx,
 		&core.Request{
 			BaseUrl:            baseP2PQiwiAPIUrl,
@@ -38,8 +40,8 @@ func (api *Client) CreateBill(ctx context.Context, billPayload *BillCreationOpti
 			HttpMethod:         http.MethodPut,
 			AuthorizationToken: api.config.SecretToken,
 			Payload: &core.Payload{
-				UrlConstructArgs: []interface{}{billId},
-				Body:             billPayload,
+				UrlConstructArgs: []interface{}{options.BillID},
+				Body:             options,
 			},
 		},
 	)
@@ -47,14 +49,14 @@ func (api *Client) CreateBill(ctx context.Context, billPayload *BillCreationOpti
 		return nil, err
 	}
 	var bill *types.Bill
-	if err := json.Unmarshal(data, &bill); err != nil {
+	if err := json.Unmarshal(response, &bill); err != nil {
 		return nil, err
 	}
 	return bill, nil
 }
 
 func (api *Client) CheckBillStatus(ctx context.Context, billID string) (*types.Bill, bool, error) {
-	data, err := api.client.SendRequest(
+	response, err := api.client.SendRequest(
 		ctx,
 		&core.Request{
 			BaseUrl:            baseP2PQiwiAPIUrl,
@@ -68,7 +70,7 @@ func (api *Client) CheckBillStatus(ctx context.Context, billID string) (*types.B
 		return nil, false, err
 	}
 	var bill types.Bill
-	if err := json.Unmarshal(data, &bill); err != nil {
+	if err := json.Unmarshal(response, &bill); err != nil {
 		return nil, false, err
 	}
 	if bill.Status.Value != types.StatusPaid {

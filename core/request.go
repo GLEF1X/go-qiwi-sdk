@@ -39,6 +39,8 @@ type Payload struct {
 func (p *Payload) GetBody() (io.Reader, error) {
 	buffer := new(bytes.Buffer)
 	err := json.NewEncoder(buffer).Encode(p.Body)
+	res, _ := json.MarshalIndent(p.Body, "", "    ")
+	fmt.Println(string(res))
 	if err != nil {
 		return nil, err
 	}

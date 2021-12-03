@@ -28,26 +28,6 @@ func NewHttpClient() *HttpClient {
 	}
 }
 
-// HasContentType determines whether the request `content-type` includes a
-// server-acceptable mime-type
-func HasContentType(r *http.Response, mimetype string) bool {
-	contentType := r.Header.Get("Content-type")
-	if contentType == "" {
-		return mimetype == "application/octet-stream"
-	}
-
-	for _, v := range strings.Split(contentType, ",") {
-		t, _, err := mime.ParseMediaType(v)
-		if err != nil {
-			break
-		}
-		if t == mimetype {
-			return true
-		}
-	}
-	return false
-}
-
 func (w *HttpClient) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
 	httpRequest, err := request.Http(ctx)
 	if err != nil {
@@ -80,4 +60,24 @@ func getResponseBody(response *http.Response) ([]byte, error) {
 		}
 	}
 	return nil, HTTPError{Status: response.StatusCode}
+}
+
+// HasContentType determines whether the request `content-type` includes a
+// server-acceptable mime-type
+func HasContentType(r *http.Response, mimetype string) bool {
+	contentType := r.Header.Get("Content-type")
+	if contentType == "" {
+		return mimetype == "application/octet-stream"
+	}
+
+	for _, v := range strings.Split(contentType, ",") {
+		t, _, err := mime.ParseMediaType(v)
+		if err != nil {
+			break
+		}
+		if t == mimetype {
+			return true
+		}
+	}
+	return false
 }

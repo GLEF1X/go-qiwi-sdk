@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"github.com/GLEF1X/qiwi-golang-sdk/core"
-	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
 	"github.com/GLEF1X/qiwi-golang-sdk/types"
 	"github.com/go-playground/validator/v10"
 	jsoniter "github.com/json-iterator/go"
@@ -46,7 +45,7 @@ func (api *QiwiClient) History(ctx context.Context, historyFilter *HistoryFilter
 		ctx,
 		&core.Request{
 			BaseUrl:            baseQIWIUrl,
-			APIEndpoint:        endpoints.TransactionsEndpoint,
+			APIEndpoint:        endpoints.Transactions,
 			HttpMethod:         http.MethodGet,
 			AuthorizationToken: api.config.AuthorizationToken,
 			Payload: &core.Payload{
