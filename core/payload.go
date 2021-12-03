@@ -1,0 +1,43 @@
+package core
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+	"sync"
+)
+
+type Payload struct {
+	Headers          *http.Header
+	QueryParams      map[string]string
+	UrlConstructArgs []interface{}
+	Body             interface{}
+}
+
+func (p *Payload) GetBody() (io.Reader, error) {
+	buffer := new(bytes.Buffer)
+	err := json.NewEncoder(buffer).Encode(p.Body)
+	if err != nil {
+		return nil, err
+	}
+	return buffer, nil
+}
+
+var headersPool = sync.Pool{
+	New: func() interface{} {
+		return http.Header{
+			"Accept":       []string{"application/json"},
+			"Host":         []string{"edge.qiwi.com"},
+			"Content-Type": []string{"application/json"},
+		}
+	},
+}
+
+func createDefaultHeaders(token string) http.Header {
+	authorizationHeaderValue := fmt.Sprintf("Bearer %s", token)
+	headers := headersPool.Get().(http.Header)
+	defer headersPool.Put(headers)
+	headers.Add("Authorization", authorizationHeaderValue)
+	return headers
+}
