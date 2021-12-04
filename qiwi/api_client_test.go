@@ -1,4 +1,4 @@
-package api
+package qiwi
 
 import (
 	"context"
@@ -13,10 +13,10 @@ import (
 )
 
 type Setup struct {
-	*Client
+	*APIClient
 }
 
-func TestQiwiClient_History(t *testing.T) {
+func TestQiwiClient_LoadHistory(t *testing.T) {
 	currentTime := time.Now()
 	truncatedFor15Minutes := currentTime.Truncate(15 * time.Minute)
 
@@ -34,10 +34,18 @@ func TestQiwiClient_History(t *testing.T) {
 	for testCaseName, testFilter := range testCases {
 		t.Logf("Running test case %s", testCaseName)
 
-		history, err := s.History(context.Background(), testFilter)
-		require.NoError(t, err)
+		history, err := s.LoadHistory(context.Background(), testFilter)
+		assert.NoError(t, err)
 		assert.IsType(t, &types.History{}, history)
 	}
+}
+
+func TestQiwiClient_GetProfile(t *testing.T) {
+	s := setup(t)
+
+	profile, err := s.GetProfile(context.Background())
+	assert.NoError(t, err)
+	assert.IsType(t, &types.Profile{}, profile)
 }
 
 func TestQiwiClient_BindPoller(t *testing.T) {
@@ -55,16 +63,16 @@ func setup(t *testing.T) *Setup {
 
 	// On CI we substitute values to env
 	token, phoneNumber := os.Getenv("API_ACCESS_TOKEN"), os.Getenv("PHONE_NUMBER")
-	require.NotEmptyf(t, token, "API token was not set in env")
+	require.NotEmptyf(t, token, "APIClient token was not set in env")
 	require.NotEmptyf(t, phoneNumber, "Phone number was not set in env")
 
 	config, err := NewConfig(token, phoneNumber)
 	require.NoError(t, err)
 
-	setup.Client = NewClient(config)
+	setup.APIClient = NewAPIClient(config)
 
 	t.Cleanup(func() {
-		setup.Client.Close()
+		setup.APIClient.Close()
 	})
 	return setup
 }

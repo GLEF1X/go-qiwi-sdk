@@ -1,4 +1,4 @@
-package api
+package qiwi
 
 import (
 	"testing"

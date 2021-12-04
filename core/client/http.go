@@ -1,4 +1,4 @@
-package core
+package client
 
 import (
 	"context"
@@ -8,19 +8,35 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GLEF1X/go-qiwi-sdk/core"
+
 	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-type WrappedHTTPClient struct {
+type Http struct {
 	*http.Client
+	baseURL        string
+	defaultHeaders map[string]string
 }
 
-type Option func(*WrappedHTTPClient)
+type Option func(*Http)
 
-func NewHttpClient(opts ...Option) *WrappedHTTPClient {
-	client := &WrappedHTTPClient{
+func WithBaseURL(url string) func(*Http) {
+	return func(h *Http) {
+		h.baseURL = url
+	}
+}
+
+func WithDefaultHeaders(headers map[string]string) func(*Http) {
+	return func(h *Http) {
+		h.defaultHeaders = headers
+	}
+}
+
+func NewHttp(opts ...Option) *Http {
+	client := &Http{
 		Client: &http.Client{
 			Transport: &http.Transport{
 				DisableCompression: true,
@@ -35,12 +51,12 @@ func NewHttpClient(opts ...Option) *WrappedHTTPClient {
 	return client
 }
 
-func (c *WrappedHTTPClient) Close() {
+func (c *Http) Close() {
 	c.CloseIdleConnections()
 }
 
-func (c *WrappedHTTPClient) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
-	httpRequest, err := request.Http(ctx)
+func (c *Http) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
+	httpRequest, err := request.ConstructHTTPRequest(ctx, c.baseURL, c.defaultHeaders)
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +81,19 @@ func getResponseBody(response *http.Response) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode >= 200 && response.StatusCode < 300 {
-		if HasContentType(response, "application/json") {
-			return result, nil
-		}
+	if ResponseIsUnsatisfactory(response) {
+		return nil, core.ErrBadResponse{Status: response.StatusCode}
 	}
-	return nil, HTTPError{Status: response.StatusCode}
+	return result, nil
+}
+
+func ResponseIsUnsatisfactory(r *http.Response) bool {
+	if !(r.StatusCode >= 200 && r.StatusCode < 300) {
+		return false
+	} else if !HasContentType(r, "application/json") {
+		return false
+	}
+	return true
 }
 
 // HasContentType determines whether the request `content-type` includes a

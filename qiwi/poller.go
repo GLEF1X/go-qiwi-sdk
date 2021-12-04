@@ -1,4 +1,4 @@
-package api
+package qiwi
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type QiwiPoller struct {
 	LastUpdateID int
 }
 
-func (p *QiwiPoller) Poll(client *Client, dest chan types.Transaction, stop chan struct{}) {
+func (p *QiwiPoller) Poll(client *APIClient, dest chan types.Transaction, stop chan struct{}) {
 	for {
 		select {
 		case <-stop:
@@ -20,7 +20,7 @@ func (p *QiwiPoller) Poll(client *Client, dest chan types.Transaction, stop chan
 		default:
 		}
 
-		bunchOfTransactions, err := client.History(context.Background(), &HistoryFilter{Rows: 50})
+		bunchOfTransactions, err := client.LoadHistory(context.Background(), &HistoryFilter{Rows: 50})
 		if err != nil {
 			//
 		}

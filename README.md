@@ -18,8 +18,8 @@ func main() {
 	if err != nil {
 		// handle it gracefully
 		panic(err)
-    }
-	httpClient := p2p.NewClient(config)
+	}
+	httpClient := p2p.NewAPIClient(config)
 	bill, err := httpClient.CreateBill(
 		context.Background(),
 		&p2p.BillCreationOptions{

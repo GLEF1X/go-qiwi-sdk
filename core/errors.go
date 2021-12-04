@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-type HTTPError struct {
+type ErrBadResponse struct {
 	Status int
 }
 
-func (e HTTPError) Error() string {
-	return fmt.Sprintf("Http %d", e.Status)
+func (e ErrBadResponse) Error() string {
+	return fmt.Sprintf("ErrBadResponse %d", e.Status)
 }
 
 type APIError struct {

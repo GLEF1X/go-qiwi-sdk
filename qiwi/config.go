@@ -1,4 +1,4 @@
-package api
+package qiwi
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrAPITokenIsEmpty          = errors.New("API Token is empty string")
+	ErrAPITokenIsEmpty          = errors.New("APIClient Token is empty string")
 	ErrPhoneNumberInvalidFormat = errors.New("phone number does not match the required format")
 )
 
@@ -18,7 +18,7 @@ func init() {
 }
 
 type Config struct {
-	AuthorizationToken string // QIWI API token received from https://qiwi.com/api
+	AuthorizationToken string // QIWI APIClient token received from https://qiwi.com/api
 	PhoneNumber        string // phone number
 }
 
