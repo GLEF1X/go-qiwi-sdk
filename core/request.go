@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
+	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
 )
 
 var headersPool = sync.Pool{

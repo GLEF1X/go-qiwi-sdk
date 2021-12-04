@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 
 	"github.com/stretchr/testify/require"
 )
@@ -16,34 +16,49 @@ type Setup struct {
 	*APIClient
 }
 
-func TestCreateBill(t *testing.T) {
+func TestAPIClient_CreateBill(t *testing.T) {
 	s := setup(t)
 
 	opts := &BillCreationOptions{Amount: types.RequestAmount{Value: 5, Currency: "RUB"}}
 
 	bill, err := s.CreateBill(context.Background(), opts)
 
-	require.NoError(t, err)
-	require.IsType(t, &types.Bill{}, bill)
+	assert.NoError(t, err)
+	assert.IsType(t, &types.Bill{}, bill)
 }
 
-func TestRejectBill(t *testing.T) {
+func TestAPIClient_RejectBill(t *testing.T) {
 	s := setup(t)
 
 	opts := &BillCreationOptions{Amount: types.RequestAmount{Value: 5, Currency: "RUB"}}
 
 	bill, err := s.CreateBill(context.Background(), opts)
 
-	require.NoError(t, err)
-	require.IsType(t, &types.Bill{}, bill)
+	assert.NoError(t, err)
+	assert.IsType(t, &types.Bill{}, bill)
 
 	err = s.RejectBill(context.Background(), bill.ID)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	status, err := s.GetBillStatus(context.Background(), bill.ID)
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, types.StatusRejected, status)
+}
+
+func TestAPIClient_GetBillStatus(t *testing.T) {
+	s := setup(t)
+
+	opts := &BillCreationOptions{Amount: types.RequestAmount{Value: 5, Currency: "RUB"}}
+
+	bill, err := s.CreateBill(context.Background(), opts)
+	assert.NoError(t, err)
+	assert.IsType(t, &types.Bill{}, bill)
+
+	billStatus, err := s.GetBillStatus(context.Background(), bill.ID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, types.StatusWaiting, billStatus)
 }
 
 func setup(t *testing.T) *Setup {

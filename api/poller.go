@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
 	"time"
+
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 )
 
 type QiwiPoller struct {
@@ -11,7 +12,7 @@ type QiwiPoller struct {
 	LastUpdateID int
 }
 
-func (p *QiwiPoller) Poll(client *QiwiClient, dest chan types.Transaction, stop chan struct{}) {
+func (p *QiwiPoller) Poll(client *Client, dest chan types.Transaction, stop chan struct{}) {
 	for {
 		select {
 		case <-stop:

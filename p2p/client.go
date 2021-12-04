@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/core"
-	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
+	"github.com/GLEF1X/go-qiwi-sdk/core"
+	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -18,7 +18,7 @@ const (
 
 type APIClient struct {
 	config     *Config
-	httpClient *core.HttpClient
+	httpClient *core.WrappedHTTPClient
 }
 
 func NewAPIClient(config *Config) *APIClient {

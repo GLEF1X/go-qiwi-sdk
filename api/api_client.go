@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/core"
-	"github.com/GLEF1X/qiwi-golang-sdk/core/endpoints"
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
+	"github.com/GLEF1X/go-qiwi-sdk/core"
+	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 	"github.com/go-playground/validator/v10"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -17,32 +17,32 @@ const (
 	baseQIWIUrl = "https://edge.qiwi.com"
 )
 
-type QiwiClient struct {
+type Client struct {
 	config     *Config
-	httpClient *core.HttpClient
+	httpClient *core.WrappedHTTPClient
 	poller     Poller
 	validate   *validator.Validate // cache are saving for multiply calls
 }
 
-func NewQiwiClient(config *Config) *QiwiClient {
-	return &QiwiClient{
+func NewClient(config *Config) *Client {
+	return &Client{
 		config:     config,
 		httpClient: core.NewHttpClient(),
 		validate:   validator.New(),
 	}
 }
 
-func (c *QiwiClient) BindPoller(p Poller) {
+func (c *Client) BindPoller(p Poller) {
 	c.poller = p
 }
 
-func (c *QiwiClient) Close() {
+func (c *Client) Close() {
 	c.httpClient.Close()
 }
 
 // History method helps you to receive transactions on the account.
 // More detailed documentation: https://developer.qiwi.com/ru/qiwi-wallet-personal/?http#payments_list
-func (c *QiwiClient) History(ctx context.Context, historyFilter *HistoryFilter) (*types.History, error) {
+func (c *Client) History(ctx context.Context, historyFilter *HistoryFilter) (*types.History, error) {
 	queryParams, err := historyFilter.ConvertToMapWithValidation(c.validate)
 	if err != nil {
 		return nil, err

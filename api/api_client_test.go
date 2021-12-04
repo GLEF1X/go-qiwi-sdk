@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 )
 
 type Setup struct {
-	*QiwiClient
+	*Client
 }
 
 func TestQiwiClient_History(t *testing.T) {
@@ -61,10 +61,10 @@ func setup(t *testing.T) *Setup {
 	config, err := NewConfig(token, phoneNumber)
 	require.NoError(t, err)
 
-	setup.QiwiClient = NewQiwiClient(config)
+	setup.Client = NewClient(config)
 
 	t.Cleanup(func() {
-		setup.QiwiClient.Close()
+		setup.Client.Close()
 	})
 	return setup
 }

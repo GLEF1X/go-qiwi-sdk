@@ -1,4 +1,4 @@
-module github.com/GLEF1X/qiwi-golang-sdk
+module github.com/GLEF1X/go-qiwi-sdk
 
 go 1.17
 

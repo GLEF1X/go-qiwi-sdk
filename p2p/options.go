@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/GLEF1X/qiwi-golang-sdk/types"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
 	"github.com/google/uuid"
 )
 

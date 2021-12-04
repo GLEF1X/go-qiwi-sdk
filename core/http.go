@@ -13,15 +13,15 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-type HttpClient struct {
-	client *http.Client
+type WrappedHTTPClient struct {
+	*http.Client
 }
 
-type Option func(*HttpClient)
+type Option func(*WrappedHTTPClient)
 
-func NewHttpClient(opts ...Option) *HttpClient {
-	client := &HttpClient{
-		client: &http.Client{
+func NewHttpClient(opts ...Option) *WrappedHTTPClient {
+	client := &WrappedHTTPClient{
+		Client: &http.Client{
 			Transport: &http.Transport{
 				DisableCompression: true,
 				IdleConnTimeout:    30 * time.Second,
@@ -35,16 +35,16 @@ func NewHttpClient(opts ...Option) *HttpClient {
 	return client
 }
 
-func (c *HttpClient) Close() {
-	c.client.CloseIdleConnections()
+func (c *WrappedHTTPClient) Close() {
+	c.CloseIdleConnections()
 }
 
-func (w *HttpClient) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
+func (c *WrappedHTTPClient) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
 	httpRequest, err := request.Http(ctx)
 	if err != nil {
 		return nil, err
 	}
-	response, err := w.client.Do(httpRequest)
+	response, err := c.Do(httpRequest)
 	if err != nil {
 		return nil, err
 	}

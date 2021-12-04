@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -11,7 +10,7 @@ type HTTPError struct {
 }
 
 func (e HTTPError) Error() string {
-	return strconv.Itoa(e.Status)
+	return fmt.Sprintf("Http %d", e.Status)
 }
 
 type APIError struct {
