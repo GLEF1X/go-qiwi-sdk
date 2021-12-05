@@ -21,20 +21,6 @@ type Http struct {
 	defaultHeaders map[string]string
 }
 
-type Option func(*Http)
-
-func WithBaseURL(url string) func(*Http) {
-	return func(h *Http) {
-		h.baseURL = url
-	}
-}
-
-func WithDefaultHeaders(headers map[string]string) func(*Http) {
-	return func(h *Http) {
-		h.defaultHeaders = headers
-	}
-}
-
 func NewHttp(opts ...Option) *Http {
 	client := &Http{
 		Client: &http.Client{
@@ -82,18 +68,18 @@ func getResponseBody(response *http.Response) ([]byte, error) {
 		return nil, err
 	}
 	if ResponseIsUnsatisfactory(response) {
-		return nil, core.ErrBadResponse{Status: response.StatusCode}
+		return nil, core.BadResponseErr{Status: response.StatusCode}
 	}
 	return result, nil
 }
 
 func ResponseIsUnsatisfactory(r *http.Response) bool {
 	if !(r.StatusCode >= 200 && r.StatusCode < 300) {
-		return false
+		return true
 	} else if !HasContentType(r, "application/json") {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 // HasContentType determines whether the request `content-type` includes a

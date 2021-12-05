@@ -11,19 +11,47 @@ import (
 )
 
 type Request struct {
-	Payload     *Payload
+	Payload     Payload
 	APIEndpoint endpoints.Endpoint
 	HttpMethod  string
 }
 
 type Payload struct {
-	Headers          *http.Header
+	Headers          http.Header
 	QueryParams      map[string]string
 	URLConstructArgs []interface{}
 	Body             interface{}
 }
 
-func (p *Payload) GetEncodedBody() (io.Reader, error) {
+func (r Request) ConstructHTTPRequest(ctx context.Context, baseURL string, additionalHeaders map[string]string) (*http.Request, error) {
+	baseURL += r.APIEndpoint.Resolve(r.Payload.URLConstructArgs)
+
+	body, err := r.Payload.getEncodedBody()
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequestWithContext(ctx, r.HttpMethod, baseURL, body)
+	if err != nil {
+		return nil, err
+	}
+
+	q := url.Values{}
+	for key, value := range r.Payload.QueryParams {
+		q.Add(key, value)
+	}
+	request.URL.RawQuery = q.Encode()
+
+	headers := getDefaultHeaders()
+	for key, value := range additionalHeaders {
+		headers.Add(key, value)
+	}
+	request.Header = headers
+
+	return request, nil
+}
+
+func (p Payload) getEncodedBody() (io.Reader, error) {
 	buffer := new(bytes.Buffer)
 	err := json.NewEncoder(buffer).Encode(p.Body)
 	if err != nil {
@@ -32,59 +60,7 @@ func (p *Payload) GetEncodedBody() (io.Reader, error) {
 	return buffer, nil
 }
 
-func (r Request) GetUrl(baseURL string) string {
-	return baseURL + r.APIEndpoint.Resolve(r.Payload.URLConstructArgs)
-}
-
-func (r Request) ConstructHTTPRequest(ctx context.Context, baseURL string, additionalHeaders map[string]string) (*http.Request, error) {
-	var URLConstructArgs []interface{}
-
-	if r.Payload != nil {
-		URLConstructArgs = r.Payload.URLConstructArgs
-	}
-	baseURL += r.APIEndpoint.Resolve(URLConstructArgs)
-
-	request, err := http.NewRequestWithContext(ctx, r.HttpMethod, baseURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	if r.Payload != nil {
-		if r.Payload.Body != nil {
-			body, err := r.Payload.GetEncodedBody()
-			if err != nil {
-				return nil, err
-			}
-			switch v := body.(type) {
-			case *bytes.Buffer:
-				request.ContentLength = int64(v.Len())
-				buf := v.Bytes()
-				request.GetBody = func() (io.ReadCloser, error) {
-					r := bytes.NewReader(buf)
-					return io.NopCloser(r), nil
-				}
-			default:
-			}
-		}
-
-		q := url.Values{}
-		for key, value := range r.Payload.QueryParams {
-			q.Add(key, value)
-		}
-		request.URL.RawQuery = q.Encode()
-	}
-
-	headers := GetDefaultHeaders()
-	for key, value := range additionalHeaders {
-		headers.Add(key, value)
-	}
-
-	request.Header = headers
-
-	return request, nil
-}
-
-func GetDefaultHeaders() http.Header {
+func getDefaultHeaders() http.Header {
 	return http.Header{
 		"Accept":       []string{"application/json"},
 		"Host":         []string{"edge.qiwi.com"},

@@ -1,4 +1,4 @@
-package qiwi
+package filters
 
 import (
 	"strconv"

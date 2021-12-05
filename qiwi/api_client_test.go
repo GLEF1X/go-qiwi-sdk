@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/GLEF1X/go-qiwi-sdk/qiwi/filters"
+
 	"github.com/GLEF1X/go-qiwi-sdk/types"
 	"github.com/stretchr/testify/assert"
 
@@ -16,11 +18,11 @@ type Setup struct {
 	*APIClient
 }
 
-func TestQiwiClient_LoadHistory(t *testing.T) {
+func TestAPIClient_LoadHistory(t *testing.T) {
 	currentTime := time.Now()
 	truncatedFor15Minutes := currentTime.Truncate(15 * time.Minute)
 
-	testCases := map[string]*HistoryFilter{
+	testCases := map[string]*filters.HistoryFilter{
 		"without any filters": {},
 		"with rows filter":    {Rows: 50},
 		"with start date and end date filter": {
@@ -40,7 +42,7 @@ func TestQiwiClient_LoadHistory(t *testing.T) {
 	}
 }
 
-func TestQiwiClient_GetProfile(t *testing.T) {
+func TestAPIClient_GetProfile(t *testing.T) {
 	s := setup(t)
 
 	profile, err := s.GetProfile(context.Background())
@@ -48,7 +50,7 @@ func TestQiwiClient_GetProfile(t *testing.T) {
 	assert.IsType(t, &types.Profile{}, profile)
 }
 
-func TestQiwiClient_BindPoller(t *testing.T) {
+func TestAPIClient_BindPoller(t *testing.T) {
 	s := setup(t)
 
 	qiwiPoller := &QiwiPoller{}

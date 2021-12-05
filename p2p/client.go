@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	http2 "github.com/GLEF1X/go-qiwi-sdk/core/client"
+	"github.com/GLEF1X/go-qiwi-sdk/core/client"
 
 	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
 	"github.com/GLEF1X/go-qiwi-sdk/types"
@@ -14,18 +14,21 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
-	baseP2PQiwiAPIURL = "https://qiwi.qiwi.com"
+	baseP2PQiwiAPIURL = "https://api.qiwi.com"
 )
 
 type APIClient struct {
 	config     *Config
-	httpClient *http2.Http
+	httpClient *client.Http
 }
 
 func NewAPIClient(config *Config) *APIClient {
 	return &APIClient{
-		config:     config,
-		httpClient: http2.NewHttp(),
+		config: config,
+		httpClient: client.NewHttp(
+			client.WithBaseURL(baseP2PQiwiAPIURL),
+			client.WithDefaultHeaders(map[string]string{"Authorization": "Bearer " + config.SecretToken}),
+		),
 	}
 }
 
@@ -40,12 +43,10 @@ func (api *APIClient) CreateBill(ctx context.Context, options *BillCreationOptio
 	}
 	response, err := api.httpClient.SendRequest(
 		ctx,
-		&http2.Request{
-			BaseUrl:            baseP2PQiwiAPIURL,
-			APIEndpoint:        endpoints.CreateBill,
-			HttpMethod:         http.MethodPut,
-			AuthorizationToken: api.config.SecretToken,
-			Payload: &http2.Payload{
+		&client.Request{
+			APIEndpoint: endpoints.CreateBill,
+			HttpMethod:  http.MethodPut,
+			Payload: client.Payload{
 				URLConstructArgs: []interface{}{options.BillID},
 				Body:             options,
 			},
@@ -64,18 +65,16 @@ func (api *APIClient) CreateBill(ctx context.Context, options *BillCreationOptio
 func (api *APIClient) GetBillStatus(ctx context.Context, billID string) (types.BillStatus, error) {
 	response, err := api.httpClient.SendRequest(
 		ctx,
-		&http2.Request{
-			BaseUrl:            baseP2PQiwiAPIURL,
-			APIEndpoint:        endpoints.CheckBillStatus,
-			HttpMethod:         http.MethodGet,
-			AuthorizationToken: api.config.SecretToken,
-			Payload:            &http2.Payload{URLConstructArgs: []interface{}{billID}},
+		&client.Request{
+			APIEndpoint: endpoints.CheckBillStatus,
+			HttpMethod:  http.MethodGet,
+			Payload:     client.Payload{URLConstructArgs: []interface{}{billID}},
 		},
 	)
 	if err != nil {
 		return "", err
 	}
-	var bill types.Bill
+	var bill *types.Bill
 	if err := json.Unmarshal(response, &bill); err != nil {
 		return "", err
 	}
@@ -85,12 +84,10 @@ func (api *APIClient) GetBillStatus(ctx context.Context, billID string) (types.B
 func (api *APIClient) RejectBill(ctx context.Context, billID string) error {
 	_, err := api.httpClient.SendRequest(
 		ctx,
-		&http2.Request{
-			BaseUrl:            baseP2PQiwiAPIURL,
-			APIEndpoint:        endpoints.RejectBill,
-			HttpMethod:         http.MethodPost,
-			AuthorizationToken: api.config.SecretToken,
-			Payload:            &http2.Payload{URLConstructArgs: []interface{}{billID}},
+		&client.Request{
+			APIEndpoint: endpoints.RejectBill,
+			HttpMethod:  http.MethodPost,
+			Payload:     client.Payload{URLConstructArgs: []interface{}{billID}},
 		},
 	)
 	if err != nil {

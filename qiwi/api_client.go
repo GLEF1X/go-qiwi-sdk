@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/GLEF1X/go-qiwi-sdk/qiwi/filters"
+
 	"github.com/GLEF1X/go-qiwi-sdk/core/client"
 
 	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
@@ -23,7 +25,7 @@ func NewAPIClient(config *Config) *APIClient {
 		config: config,
 		httpClient: client.NewHttp(
 			client.WithBaseURL(baseQIWIUrl),
-			client.WithDefaultHeaders(map[string]string{"Authorization": config.AuthorizationToken}),
+			client.WithDefaultHeaders(map[string]string{"Authorization": "Bearer " + config.AuthorizationToken}),
 		),
 		validate: validator.New(),
 	}
@@ -38,7 +40,7 @@ type APIClient struct {
 
 // LoadHistory method helps you to receive transactions on the account.
 // More detailed documentation: https://developer.qiwi.com/ru/qiwi-wallet-personal/?http#payments_list
-func (c *APIClient) LoadHistory(ctx context.Context, historyFilter *HistoryFilter) (*types.History, error) {
+func (c *APIClient) LoadHistory(ctx context.Context, historyFilter *filters.HistoryFilter) (*types.History, error) {
 	queryParams, err := historyFilter.ConvertToMapWithValidation(c.validate)
 	if err != nil {
 		return nil, err
@@ -48,7 +50,7 @@ func (c *APIClient) LoadHistory(ctx context.Context, historyFilter *HistoryFilte
 		&client.Request{
 			APIEndpoint: endpoints.GetTransactions,
 			HttpMethod:  http.MethodGet,
-			Payload: &client.Payload{
+			Payload: client.Payload{
 				QueryParams:      queryParams,
 				URLConstructArgs: []interface{}{c.config.GetPhoneNumberForAPIRequests()},
 			},

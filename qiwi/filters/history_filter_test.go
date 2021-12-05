@@ -1,4 +1,4 @@
-package qiwi
+package filters
 
 import (
 	"reflect"
@@ -77,7 +77,6 @@ func getNotZeroFieldsNum(s interface{}) int {
 			continue
 		}
 		atomic.AddUint64(&counter, 1)
-
 	}
 	return int(counter)
 }
