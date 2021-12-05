@@ -1,5 +1,9 @@
 # SDK for QIWI API, written with golang
 
+### Installation
+```bash
+go get -u github.com/GLEF1X/go-qiwi-sdk
+```
 
 ### Quick example:
 
