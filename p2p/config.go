@@ -3,6 +3,8 @@ package p2p
 import (
 	"encoding/base64"
 	"fmt"
+
+	"github.com/goccy/go-json"
 )
 
 type Config struct {

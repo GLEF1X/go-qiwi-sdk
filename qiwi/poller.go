@@ -21,7 +21,7 @@ func (p *QiwiPoller) Poll(client *APIClient, dest chan types.Transaction, stop c
 			return
 		default:
 		}
-
+		// TODO handle exception when load history
 		bunchOfTransactions, _ := client.LoadHistory(context.Background(), &filters.HistoryFilter{Rows: 50})
 		for _, transaction := range bunchOfTransactions.Transactions {
 			p.LastUpdateID = transaction.ID

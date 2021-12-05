@@ -11,6 +11,8 @@ jobs:
     name: Full SDK and tools test
     runs-on: ${{ matrix.os }}
     strategy:
+      # Because we are testing on real QIWI API and we can't
+      # run more than 2 workers simultaneously cause we will get 429 HTTP
       max-parallel: 2
       fail-fast: false
       matrix:

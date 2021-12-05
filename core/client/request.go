@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
+	"github.com/goccy/go-json"
 )
 
 type Request struct {

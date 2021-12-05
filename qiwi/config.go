@@ -2,13 +2,13 @@ package qiwi
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
 
 var (
-	ErrAPITokenIsEmpty          = errors.New("APIClient Token is empty string")
-	ErrPhoneNumberInvalidFormat = errors.New("phone number does not match the required format")
+	ConfigInputInvalidErr = errors.New("Config invalid: ")
 )
 
 var phoneNumberRegexp *regexp.Regexp
@@ -28,7 +28,7 @@ func (c *Config) GetPhoneNumberForAPIRequests() string {
 
 func NewConfig(APIAccessToken string, PhoneNumber string) (*Config, error) {
 	if strings.TrimSpace(APIAccessToken) == "" {
-		return nil, ErrAPITokenIsEmpty
+		return nil, fmt.Errorf("%w api access token is empty", ConfigInputInvalidErr)
 	}
 
 	if !strings.HasPrefix(PhoneNumber, "+") {
@@ -36,7 +36,7 @@ func NewConfig(APIAccessToken string, PhoneNumber string) (*Config, error) {
 	}
 
 	if !phoneNumberRegexp.MatchString(PhoneNumber) {
-		return nil, ErrPhoneNumberInvalidFormat
+		return nil, fmt.Errorf("%w wrong phone number format", ConfigInputInvalidErr)
 	}
 
 	return &Config{

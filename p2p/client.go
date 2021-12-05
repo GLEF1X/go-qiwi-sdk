@@ -8,10 +8,8 @@ import (
 
 	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
 	"github.com/GLEF1X/go-qiwi-sdk/types"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	baseP2PQiwiAPIURL = "https://api.qiwi.com"
@@ -30,10 +28,6 @@ func NewAPIClient(config *Config) *APIClient {
 			client.WithDefaultHeaders(map[string]string{"Authorization": "Bearer " + config.SecretToken}),
 		),
 	}
-}
-
-func (api *APIClient) Close() {
-	api.httpClient.Close()
 }
 
 func (api *APIClient) CreateBill(ctx context.Context, options *BillCreationOptions) (*types.Bill, error) {
@@ -94,4 +88,8 @@ func (api *APIClient) RejectBill(ctx context.Context, billID string) error {
 		return err
 	}
 	return nil
+}
+
+func (api *APIClient) Close() {
+	api.httpClient.Close()
 }

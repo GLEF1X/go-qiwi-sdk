@@ -9,11 +9,7 @@ import (
 	"time"
 
 	"github.com/GLEF1X/go-qiwi-sdk/core"
-
-	jsoniter "github.com/json-iterator/go"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Http struct {
 	*http.Client
@@ -35,10 +31,6 @@ func NewHttp(opts ...Option) *Http {
 		opt(client)
 	}
 	return client
-}
-
-func (c *Http) Close() {
-	c.CloseIdleConnections()
 }
 
 func (c *Http) SendRequest(ctx context.Context, request *Request) (result []byte, err error) {
@@ -68,7 +60,7 @@ func getResponseBody(response *http.Response) ([]byte, error) {
 		return nil, err
 	}
 	if ResponseIsUnsatisfactory(response) {
-		return nil, core.BadResponseErr{Status: response.StatusCode}
+		return nil, core.BadResponseError{Status: response.StatusCode}
 	}
 	return result, nil
 }
@@ -100,4 +92,8 @@ func HasContentType(r *http.Response, mimetype string) bool {
 		}
 	}
 	return false
+}
+
+func (c *Http) Close() {
+	c.CloseIdleConnections()
 }
