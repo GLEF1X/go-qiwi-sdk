@@ -5,7 +5,7 @@
 *.so
 *.dylib
 
-# testFilter main file
+# main file just for internal testing
 main.go
 
 # coverage and profiles

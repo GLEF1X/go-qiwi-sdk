@@ -22,10 +22,7 @@ func (p *QiwiPoller) Poll(client *APIClient, dest chan types.Transaction, stop c
 		default:
 		}
 
-		bunchOfTransactions, err := client.LoadHistory(context.Background(), &filters.HistoryFilter{Rows: 50})
-		if err != nil {
-			//
-		}
+		bunchOfTransactions, _ := client.LoadHistory(context.Background(), &filters.HistoryFilter{Rows: 50})
 		for _, transaction := range bunchOfTransactions.Transactions {
 			p.LastUpdateID = transaction.ID
 			dest <- transaction
