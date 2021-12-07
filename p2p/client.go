@@ -11,9 +11,7 @@ import (
 	"github.com/goccy/go-json"
 )
 
-const (
-	baseP2PQiwiAPIURL = "https://api.qiwi.com"
-)
+const baseP2PQiwiAPIURL = "https://api.qiwi.com"
 
 type APIClient struct {
 	config     *Config

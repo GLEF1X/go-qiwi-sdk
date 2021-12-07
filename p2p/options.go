@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/GLEF1X/go-qiwi-sdk/types"
@@ -13,7 +14,7 @@ const (
 )
 
 var (
-	ErrAmountIsEmpty = errors.New("amount field cannot be empty")
+	NormalizationError = errors.New("BillCreationOptions normalize: ")
 )
 
 type BillCreationOptions struct {
@@ -33,8 +34,11 @@ func (opts *BillCreationOptions) Normalize() (*BillCreationOptions, error) {
 			return nil, err
 		}
 	}
-	if opts.Amount.Value == 0 || opts.Amount.Currency == "" {
-		return nil, ErrAmountIsEmpty
+	if opts.Amount.Value <= 0 {
+		return nil, fmt.Errorf("%w amount cannot be <=0", NormalizationError)
+	}
+	if opts.Amount.Currency == "" {
+		return nil, fmt.Errorf("%w currency field cannot be empty", NormalizationError)
 	}
 	return opts, nil
 }
