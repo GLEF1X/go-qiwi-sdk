@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    name: Full SDK and tools test
+    name: Full SDK test
     runs-on: ${{ matrix.os }}
     strategy:
       # Because we are testing on real QIWI API and we can't

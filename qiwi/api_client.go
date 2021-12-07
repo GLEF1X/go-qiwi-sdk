@@ -2,6 +2,7 @@ package qiwi
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/GLEF1X/go-qiwi-sdk/qiwi/filters"
@@ -11,10 +12,8 @@ import (
 	"github.com/GLEF1X/go-qiwi-sdk/core/endpoints"
 	"github.com/GLEF1X/go-qiwi-sdk/types"
 	"github.com/go-playground/validator/v10"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	baseQIWIUrl = "https://edge.qiwi.com"
@@ -38,10 +37,11 @@ type APIClient struct {
 	validate   *validator.Validate // internal cache are saving for multiply validations
 }
 
-// LoadHistory method helps you to receive transactions on the account.
+// RetrieveHistory method helps you to receive transactions on the account.
 // More detailed documentation: https://developer.qiwi.com/ru/qiwi-wallet-personal/?http#payments_list
-func (c *APIClient) LoadHistory(ctx context.Context, historyFilter *filters.HistoryFilter) (*types.History, error) {
+func (c *APIClient) RetrieveHistory(ctx context.Context, historyFilter *filters.HistoryFilter) (*types.History, error) {
 	queryParams, err := historyFilter.ConvertToMapWithValidation(c.validate)
+	log.Printf("Fetch QIWI API with dates from %s to %s", queryParams["startDate"], queryParams["endDate"])
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +84,6 @@ func (c *APIClient) GetProfile(ctx context.Context) (*types.Profile, error) {
 		return nil, err
 	}
 	return profile, err
-}
-
-func (c *APIClient) BindPoller(p Poller) {
-	c.poller = p
 }
 
 func (c *APIClient) Close() {

@@ -18,7 +18,7 @@ type Setup struct {
 	*APIClient
 }
 
-func TestAPIClient_LoadHistory(t *testing.T) {
+func TestAPIClient_RetrieveHistory(t *testing.T) {
 	currentTime := time.Now()
 	truncatedFor15Minutes := currentTime.Truncate(15 * time.Minute)
 
@@ -36,7 +36,7 @@ func TestAPIClient_LoadHistory(t *testing.T) {
 	for testCaseName, testFilter := range testCases {
 		t.Logf("Running test case %s", testCaseName)
 
-		history, err := s.LoadHistory(context.Background(), testFilter)
+		history, err := s.RetrieveHistory(context.Background(), testFilter)
 		assert.NoError(t, err)
 		assert.IsType(t, &types.History{}, history)
 	}
@@ -48,15 +48,6 @@ func TestAPIClient_GetProfile(t *testing.T) {
 	profile, err := s.GetProfile(context.Background())
 	assert.NoError(t, err)
 	assert.IsType(t, &types.Profile{}, profile)
-}
-
-func TestAPIClient_BindPoller(t *testing.T) {
-	s := setup(t)
-
-	qiwiPoller := &QiwiPoller{}
-	s.BindPoller(qiwiPoller)
-
-	assert.Equal(t, qiwiPoller, s.poller)
 }
 
 func setup(t *testing.T) *Setup {

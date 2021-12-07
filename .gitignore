@@ -23,3 +23,6 @@ profile.out
 
 # IDE
 .idea
+
+# Configurations for linters and other toolings
+.golangci.yml
