@@ -19,6 +19,12 @@ const (
 	baseQIWIUrl = "https://edge.qiwi.com"
 )
 
+type APIClient struct {
+	httpClient *client.Http
+	validate   *validator.Validate // internal cache are saving for multiply validations
+	config     *Config
+}
+
 func NewAPIClient(config *Config) *APIClient {
 	return &APIClient{
 		config: config,
@@ -28,13 +34,6 @@ func NewAPIClient(config *Config) *APIClient {
 		),
 		validate: validator.New(),
 	}
-}
-
-type APIClient struct {
-	config     *Config
-	httpClient *client.Http
-	poller     Poller
-	validate   *validator.Validate // internal cache are saving for multiply validations
 }
 
 // RetrieveHistory method helps you to receive transactions on the account.

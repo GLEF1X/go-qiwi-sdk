@@ -1,6 +1,7 @@
 package qiwi
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,13 +22,13 @@ func TestNewConfigAddPlusToPhoneNumber(t *testing.T) {
 func TestFailNewConfigIfTokenIsEmpty(t *testing.T) {
 	_, err := NewConfig("", "+1111111111")
 	if assert.Error(t, err) {
-		assert.Equal(t, ErrAPITokenIsEmpty, err)
+		assert.Equal(t, errors.Is(err, ConfigInputInvalidErr), true)
 	}
 }
 
 func TestFailNewConfigDueToInvalidPhoneNumberFormat(t *testing.T) {
 	_, err := NewConfig("SomeToken", "+")
 	if assert.Error(t, err) {
-		assert.Equal(t, ErrPhoneNumberInvalidFormat, err)
+		assert.Equal(t, errors.Is(err, ConfigInputInvalidErr), true)
 	}
 }

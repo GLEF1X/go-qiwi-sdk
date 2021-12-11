@@ -1,22 +1,18 @@
 package polling
 
-import "github.com/GLEF1X/go-qiwi-sdk/types"
-
 type Filter interface {
 	Check(event interface{}) bool
 }
 
-// Built-in filters
-type transactionFilter struct{}
-
-func (txnFilter transactionFilter) Check(event interface{}) bool {
-	_, ok := event.(*types.Transaction)
-	return ok
+// Built-in filter
+type f struct {
+	checkFn func(interface{}) bool
 }
 
-type errorFilter struct{}
+func (f f) Check(event interface{}) bool {
+	return f.checkFn(event)
+}
 
-func (f errorFilter) Check(event interface{}) bool {
-	_, ok := event.(error)
-	return ok
+func makeDefaultFilterFromFunc(checkFn func(interface{}) bool) Filter {
+	return f{checkFn: checkFn}
 }

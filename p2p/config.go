@@ -7,6 +7,15 @@ import (
 	"github.com/goccy/go-json"
 )
 
+type tokenPayload struct {
+	Version string
+	Data    struct {
+		PayinMerchantSiteUID string
+		UserID               string
+		Secret               string
+	}
+}
+
 type Config struct {
 	SecretToken string // QIWI P2P secret token received from https://p2p.qiwi.com/
 }
@@ -23,15 +32,8 @@ func isTokenValid(plainStringToken string) bool {
 	if err != nil {
 		return false
 	}
-	newTokenPayload := struct {
-		version string
-		data    struct {
-			payinMerchantSiteUID string
-			userID               string
-			secret               string
-		}
-	}{}
-	if err := json.Unmarshal(decodedToken, &newTokenPayload); err != nil {
+	var payload tokenPayload
+	if err := json.Unmarshal(decodedToken, &payload); err != nil {
 		return false
 	}
 	return true

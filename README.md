@@ -34,3 +34,38 @@ func main() {
 	fmt.Println(bill.PayUrl)
 }
 ```
+
+### Polling: 
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/GLEF1X/go-qiwi-sdk/qiwi"
+	"github.com/GLEF1X/go-qiwi-sdk/qiwi/polling"
+	"github.com/GLEF1X/go-qiwi-sdk/types"
+)
+
+func main() {
+	config, err := qiwi.NewConfig("token", "+phone_number")
+	if err != nil {
+		panic(err)
+	}
+
+	apiClient := qiwi.NewAPIClient(config)
+
+	dp := polling.NewDispatcher(&polling.Config{MaxConcurrent: 10})
+
+	dp.HandleTransaction(func(transaction *types.Transaction) {
+		log.Println(transaction.ID)
+	})
+
+	dp.HandleError(func(err error) {
+		log.Println("Handle error in error handler")
+	})
+
+	dp.StartPolling(apiClient)
+}
+```

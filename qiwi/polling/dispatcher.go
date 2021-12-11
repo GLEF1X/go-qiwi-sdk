@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"sort"
 	"time"
 
 	"github.com/GLEF1X/go-qiwi-sdk/qiwi"
@@ -14,10 +13,11 @@ import (
 	"github.com/GLEF1X/go-qiwi-sdk/qiwi/filters"
 )
 
-const (
-	maxHistoryTransactionLimit = 50
+const maxHistoryTransactionLimit = 50
 
-	defaultConcurrentMaximum = 10
+const (
+	defaultConcurrentMaximum = 1
+	defaultPollingTimeout    = 5 * time.Second
 )
 
 type Handler struct {
@@ -58,7 +58,8 @@ type Dispatcher struct {
 }
 
 type Config struct {
-	GetUpdatesFromDate time.Time
+	GetUpdatesFromDate *time.Time
+	PollingTimeout     time.Duration
 
 	// Max updates, that would be processed by handlers concurrently
 	MaxConcurrent int
@@ -67,6 +68,9 @@ type Config struct {
 func NewDispatcher(config *Config) *Dispatcher {
 	if config.MaxConcurrent == 0 {
 		config.MaxConcurrent = defaultConcurrentMaximum
+	}
+	if config.PollingTimeout == 0 {
+		config.PollingTimeout = defaultPollingTimeout
 	}
 
 	return &Dispatcher{
@@ -77,15 +81,29 @@ func NewDispatcher(config *Config) *Dispatcher {
 }
 
 func (dp *Dispatcher) HandleTransaction(handler func(*types.Transaction), additionalFilters ...Filter) {
-	dp.addHandler(handler, transactionFilter{}, additionalFilters...)
+	dp.addHandler(
+		handler,
+		func(event interface{}) bool {
+			_, ok := event.(*types.Transaction)
+			return ok
+		},
+		additionalFilters...,
+	)
 }
 
 func (dp *Dispatcher) HandleError(handler func(error), additionalFilters ...Filter) {
-	dp.addHandler(handler, errorFilter{}, additionalFilters...)
+	dp.addHandler(
+		handler,
+		func(event interface{}) bool {
+			_, ok := event.(error)
+			return ok
+		},
+		additionalFilters...,
+	)
 }
 
-func (dp *Dispatcher) addHandler(handler interface{}, defaultFilter Filter, filters ...Filter) {
-	eventFilters := []Filter{defaultFilter}
+func (dp *Dispatcher) addHandler(handler interface{}, defaultFilter func(interface{}) bool, filters ...Filter) {
+	eventFilters := []Filter{makeDefaultFilterFromFunc(defaultFilter)}
 	eventFilters = append(eventFilters, filters...)
 
 	dp.handlerStack = append(dp.handlerStack, Handler{
@@ -94,9 +112,12 @@ func (dp *Dispatcher) addHandler(handler interface{}, defaultFilter Filter, filt
 	})
 }
 
-func (dp *Dispatcher) LaunchPolling(apiClient *qiwi.APIClient) {
+func (dp *Dispatcher) StartPolling(apiClient *qiwi.APIClient) {
 	defer apiClient.Close()
-	dp.config.GetUpdatesFromDate = time.Now()
+	if dp.config.GetUpdatesFromDate == nil {
+		currentTime := time.Now()
+		dp.config.GetUpdatesFromDate = &currentTime
+	}
 
 	go dp.fetchNewEvents(apiClient)
 
@@ -104,7 +125,7 @@ func (dp *Dispatcher) LaunchPolling(apiClient *qiwi.APIClient) {
 		select {
 		case update := <-dp.updates:
 			log.Println("Get update from channel, starting propagate it")
-			dp.propagateEvent(update)
+			dp.PropagateEventToHandlers(update)
 		case <-dp.stop:
 			close(dp.stop)
 			return
@@ -123,40 +144,36 @@ func (dp *Dispatcher) fetchNewEvents(apiClient *qiwi.APIClient) {
 			return
 		default:
 		}
-		log.Println("Start fetching new events...")
+
 		currentTime := time.Now()
-		log.Printf("Poll transactions from %s to %s", dp.config.GetUpdatesFromDate.Format(time.RFC3339), currentTime.Format(time.RFC3339))
 		history, err := apiClient.RetrieveHistory(context.Background(), &filters.HistoryFilter{
-			StartDate: &dp.config.GetUpdatesFromDate,
+			StartDate: dp.config.GetUpdatesFromDate,
 			EndDate:   &currentTime,
 		})
+
 		if err != nil {
 			log.Printf("Catched exception %s", err.Error())
 		}
+
 		for _, update := range history.Transactions {
 			if !(update.ID > dp.offset) {
-				log.Printf("Skip update %d due to offset is bigger: %d > %d", update.ID, update.ID, dp.offset)
 				continue
 			}
-			log.Printf("Iterate throw the history, current update id is %d", update.ID)
 			dp.updates <- &update
 		}
-		sort.Slice(history.Transactions, func(i, j int) bool {
-			return history.Transactions[i].ID < history.Transactions[j].ID
-		})
-		log.Println("Current sorted history: ", history.Transactions)
+
+		sortHistoryByIDAscending(history)
 		if len(history.Transactions) != 0 {
-			log.Printf("History is not empty, set new offset to %d", history.Transactions[len(history.Transactions)-1].ID)
 			dp.offset = history.Transactions[len(history.Transactions)-1].ID
 		} else if len(history.Transactions) == maxHistoryTransactionLimit {
-			dp.config.GetUpdatesFromDate = history.Transactions[len(history.Transactions)-1].Date
+			dp.config.GetUpdatesFromDate = &history.Transactions[len(history.Transactions)-1].Date
 		}
-		log.Println("Sleeping...")
-		time.Sleep(5 * time.Second)
+
+		time.Sleep(dp.config.PollingTimeout)
 	}
 }
 
-func (dp *Dispatcher) propagateEvent(event interface{}) {
+func (dp *Dispatcher) PropagateEventToHandlers(event interface{}) {
 	processChan := make(chan struct{}, 1)
 	for _, handler := range dp.handlerStack {
 		log.Printf("Get event %T. Start iterating throw handlerStack", event)
